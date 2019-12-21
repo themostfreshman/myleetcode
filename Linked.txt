@@ -1,0 +1,144 @@
+链表循环是个问题，以什么来循环呢，根据情况判断把，有当前节点，也有当前节点的next
+1.两个链表相加的问题
+	判断为两个链表节点同时为空时才跳出
+	遍历数据时，空就为0，三目 这样就不用很扯淡的if else了
+	相加时，sum = carry + x + y  carry = sum/10  result = sum%10这样简洁点
+	结束时，不为空的向下遍历
+	最后，carry不为0，再创建一个值为carry的节点即可
+public ListNode addTwoNumbers(ListNode l1, ListNode l2) {
+    ListNode dummyHead = new ListNode(0);
+    ListNode p = l1, q = l2, curr = dummyHead;
+    int carry = 0;
+    while (p != null || q != null) { //同时为空时才跳出
+        int x = (p != null) ? p.val : 0;
+        int y = (q != null) ? q.val : 0;
+        int sum = carry + x + y;
+        carry = sum / 10;
+        curr.next = new ListNode(sum % 10);
+        curr = curr.next;
+        if (p != null) p = p.next;
+        if (q != null) q = q.next;
+    }
+    if (carry > 0) {
+        curr.next = new ListNode(carry);
+    }
+    return dummyHead.next;
+}
+2.删除倒数的链表，经典的解法就是两个指针，一个先走n+1后，另一个再走，中间始终差n个，这样第一个为null时跳出循环
+    public ListNode removeNthFromEnd2(ListNode head, int n) {
+        ListNode dummy = new ListNode(0);
+        dummy.next = head;
+        ListNode first = dummy;
+        ListNode second = dummy;
+        // Advances first pointer so that the gap between first and second is n nodes apart
+        for (int i = 1; i <= n + 1; i++) {
+            first = first.next;
+        }
+        // Move first to the end, maintaining the gap
+        while (first != null) {
+            first = first.next;
+            second = second.next;
+        }
+        second.next = second.next.next;
+        return dummy.next;
+    }
+3.合并两个有序链表，思路都那样，判断大小，等于的情况不用单独开一个if，合并到上两种情况，添加一个就行，多循环一次嘛，一样的，代码简洁好多，跳出循环后空的判断，因为是直接动l1，l2的，
+直接把结果的next指向不为空的那个就可以了。自己写的一堆if else。。。。。
+public static ListNode mergeTwoLists(ListNode l1, ListNode l2){
+    ListNode result = new ListNode(0);
+    ListNode dummy = result;
+    while(l1!=null && l2!=null){
+        if(l1.val>=l2.val){
+            result.next=l2;
+            l2=l2.next;
+        }else{
+            result.next=l1;
+            l1=l1.next;
+        }
+        result=result.next;
+    }
+    result.next= l1==null?l2:l1;
+    return dummy.next;
+}
+4.合并k个链表
+	1.暴力法  ，遍历所有链表，加入数组，排序，创建新的链表。。。惬意
+	public ListNode mergeKLists(ListNode[] lists) {
+
+        //遍历所有链表，压入数组
+        ArrayList<Integer> temp = new ArrayList<>();
+        for (ListNode ld:lists
+             ) {
+            while(ld!=null){
+                temp.add(ld.val);
+                ld=ld.next;
+            }
+        }
+        //排序
+        Collections.sort(temp);
+        //重新创建链表
+        ListNode first = new ListNode(-1);
+        ListNode dummy = new ListNode(-1);
+        dummy=first;
+        for (Integer i:temp
+             ) {
+            ListNode listNode = new ListNode(i);
+            first.next=listNode;
+            first=first.next;
+        }
+        return dummy.next;
+    }
+	2.暴力法的优化，使用优先序列，本质上时使用堆排序来代替上面的快排。
+	public ListNode mergeKLists2(ListNode[] lists) {
+
+        //遍历所有链表，压入优先序列
+        PriorityQueue<Integer> temp = new PriorityQueue<>();
+        for (ListNode ld:lists
+        ) {
+            while(ld!=null){
+                temp.add(ld.val);
+                ld=ld.next;
+            }
+        }
+        //重新创建链表
+        ListNode first = new ListNode(-1);
+        ListNode dummy = new ListNode(-1);
+        dummy=first;
+        while(!temp.isEmpty()) {
+            ListNode listNode = new ListNode(temp.poll());
+            first.next=listNode;
+            first=first.next;
+        }
+        return dummy.next;
+    }
+	3.两两合并，使用递归的方式
+	private ListNode merge(ListNode[] lists, int left, int right) {
+		//跳出的条件
+        if (left == right) return lists[left];
+        int mid = left + (right - left) / 2;
+        ListNode l1 = merge(lists, left, mid);
+        ListNode l2 = merge(lists, mid + 1, right);
+		//双链表合并
+        return mergeTwoLists(l1, l2);
+    }
+	4.两两合并，使用间隔的方式
+	public ListNode mergeKLists(ListNode[] lists) {
+		//首先是0 1合并 间隔为一，往后间隔翻倍
+        int internal = 1;
+        int len = lists.length;
+        if(len>0){
+            while(internal < len){
+				//i的步进为间隔的两倍，i的次数为len-间隔，第一次i最大为7了。第二次i最大为6，第三次i最大为4，这样子往后推
+                for(int i =0;i<len-internal;i=i+internal*2){
+                    lists[i]= mergeTwoLists(lists[i],lists[i+internal]);
+                }
+                internal*=2;
+            }
+            return lists[0];
+        }
+        return null;
+    }		
+	0 1 2 3 4 5 6 7
+	0   2   4   6
+	0       4
+	0
+	
