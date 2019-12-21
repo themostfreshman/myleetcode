@@ -150,7 +150,7 @@
         findCombinationSum(target, 0, new Stack<>());
         return res;
     }
-	当数组元素不能重复使用时  递归时传递的是i+1，指向下一个即可 再加一个去除相等元素
+当数组元素不能重复使用时  递归时传递的是i+1，指向下一个即可 再加一个去除相等元素
 	private void findCombinationSum2(int[] candidates, int begin, int len, int residue, Stack<Integer> stack, List<List<Integer>> res) {
         if (residue == 0) {
             res.add(new ArrayList<>(stack));
