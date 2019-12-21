@@ -1,0 +1,180 @@
+问题描述：从一个list中找到固定数量/非固定数量数字的整合，满足某个条件 eg：等于某个target，最接近某个target
+要看清楚返回的东西是数字的集合还是index的集合，第二种情况是不能排序的
+
+1.number为2时，使用map，一次遍历数组即可。遍历过程将element插进map，后续进行判断，满足则返回
+    public static int[] twoSum(int[] nums, int target) {
+        Map<Integer, Integer> map = new HashMap<>();
+        for (int i = 0; i < nums.length; i++) {
+            int complement = target - nums[i];
+            if (map.containsKey(complement)) {
+                return new int[] { map.get(complement), i };
+            }
+            map.put(nums[i], i);
+        }
+        return null;
+    }
+
+2.number为3时，使用双指针，遍历的数组过程中，当前元素为key，双指针当前key找到满足的情况，先排序能够很大的简化计算。在双指针之前可以对最大值最小值进行判断，不满足直接跳过/返回结果
+	public static List<List<Integer>> threeSum(int[] nums) {
+        //先排序，方便简化计算
+        Arrays.sort(nums);
+        int i,j,sum,len=nums.length;
+        List<List<Integer>> res = new ArrayList<>();
+        //由k进行遍历所有的元素，即判断k为主的组合
+        for(int k = 0; k < len - 2; k++){
+            //因为已经是先排序过，所以nums[k]是最小的，大于0，不可能满足
+            if(nums[k] > 0) break;
+            //相同的情况在前面已经判断过，跳过
+            if(k > 0 && nums[k] == nums[k - 1]) continue;
+            //i，j为组合指针
+            i = k + 1;
+            j = nums.length - 1;
+            //循环判断组合
+            while(i < j){
+                sum = nums[k] + nums[i] + nums[j];
+                if(sum < 0){
+                    //小了 说明i小了
+                    //while(i < j && nums[i] == nums[++i]);
+                    i++;
+                } else if (sum > 0) {
+                    //大了，说明j大了
+                    //while(i < j && nums[j] == nums[--j]);
+                    j--;
+                } else {
+                    //bingo 正中情况
+                    res.add(Arrays.asList(nums[k], nums[i], nums[j]));
+                    //然后i++，j--，跳过相同数字再进行判断
+                    while(i < j && nums[i] == nums[++i]);
+                    while(i < j && nums[j] == nums[--j]);
+                }
+            }
+        }
+        return res;
+    }
+	
+3.number为4时，参考threesome，嵌套就完事了
+	public static List<List<Integer>> fourSum(int[] nums,int target){
+        int length = nums.length;
+        //先声明返回结果
+        List<List<Integer>> res = new ArrayList<>();
+        //排序，简化计算
+        Arrays.sort(nums);
+        //一层遍历，拿到key 1
+        for(int k =0;k<nums.length-3;k++){
+            //去重
+            if(k>0 && nums[k]==nums[k-1]) continue;
+            //对k来说，计算最大值，与最小值
+            int max = nums[k]+nums[length-1]+nums[length-2]+nums[length-3];
+            //如果对于k能取到的最大值仍小于target，跳过
+            if(max<target){
+                continue;
+            }
+            int min = nums[k]+nums[k+1]+nums[k+2]+nums[k+3];
+            // k的最小值仍大于target，不用往下继续判断了
+            if(min>target){
+                //更新 i
+                break;
+            }
+            for(int t=k+1;t<nums.length-2;t++){
+                //去重
+                if(t>k+1 && nums[t]==nums[t-1]) continue;
+                int max2 = nums[t]+nums[nums.length-1]+nums[nums.length-2];
+            //如果对于k能取到的最大值仍小于target，跳过
+                if(max2<target-nums[k]){
+                    continue;
+                }
+                int min2 = nums[t]+nums[t+1]+nums[t+2];
+                // k的最小值仍大于target，不用往下继续判断了
+                if(min2>target-nums[k]){
+                    //更新 i
+                    break;
+                }
+                //然后就是双指针了
+                int i=t+1;
+                int j=nums.length-1;
+                while(i<j){
+
+                    int sum = nums[k]+nums[t]+nums[i]+nums[j];
+                    if(sum==target){
+                        //加入结果集
+                        res.add(Arrays.asList(nums[k],nums[t],nums[i],nums[j]));
+                        //更新 i j
+                        while(i<j && nums[i]==nums[++i]);
+                       
+                        while(i<j && nums[j]==nums[--j]);
+        
+                    }else{
+                        if(sum>target){
+                            //j大了
+                            //while(i<j && nums[j]==nums[--j]);
+                            j--;
+                        }else{
+                            //while(i<j && nums[i]==nums[++i]);
+                            i++;
+                        }
+                    }
+                }
+            }
+        }
+        return res;
+    }
+	
+4。number为任意数量时，回溯法登场，画出树形结构，减枝，递归即可。要保存前一阶段的选择，得不到结果，那么就扔掉
+	private List<List<Integer>> res = new ArrayList<>();
+    private int[] candidates;
+    private int len;
+
+    private void findCombinationSum(int residue, int start, Stack<Integer> pre) {
+        if (residue == 0) {
+            // Java 中可变对象是引用传递，因此需要将当前 path 里的值拷贝出来
+            res.add(new ArrayList<>(pre));
+            return;
+        }
+        for (int i = start; i < len && residue - candidates[i] >= 0; i++) {
+            pre.add(candidates[i]);
+            // 【关键】因为元素可以重复使用，这里递归传递下去的是 i 而不是 i + 1
+            findCombinationSum(residue - candidates[i], i, pre);
+            pre.pop();
+        }
+    }
+
+    public List<List<Integer>> combinationSum(int[] candidates, int target) {
+        int len = candidates.length;
+        if (len == 0) {
+            return res;
+        }
+        // 优化添加的代码1：先对数组排序，可以提前终止判断
+        Arrays.sort(candidates);
+        this.len = len;
+        this.candidates = candidates;
+        findCombinationSum(target, 0, new Stack<>());
+        return res;
+    }
+	当数组元素不能重复使用时  递归时传递的是i+1，指向下一个即可 再加一个去除相等元素
+	private void findCombinationSum2(int[] candidates, int begin, int len, int residue, Stack<Integer> stack, List<List<Integer>> res) {
+        if (residue == 0) {
+            res.add(new ArrayList<>(stack));
+            return;
+        }
+        for (int i = begin; i < len && residue - candidates[i] >= 0; i++) {
+            if (i > begin && candidates[i] == candidates[i - 1]) {
+                continue;
+            }
+            stack.add(candidates[i]);
+            // 【关键】因为元素不可以重复使用，这里递归传递下去的是 i + 1 而不是 i
+            findCombinationSum2(candidates, i + 1, len, residue - candidates[i], stack, res);
+            stack.pop();
+        }
+    }
+
+    public List<List<Integer>> combinationSum2(int[] candidates, int target) {
+        int len = candidates.length;
+        List<List<Integer>> res = new ArrayList<>();
+        if (len == 0) {
+            return res;
+        }
+        // 先将数组排序，这一步很关键
+        Arrays.sort(candidates);
+        findCombinationSum2(candidates, 0, len, target, new Stack<>(), res);
+        return res;
+    }
