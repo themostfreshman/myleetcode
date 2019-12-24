@@ -34,3 +34,71 @@
         }
         return ans;
     }
+2.找到最长的回文子串
+	1.暴力法 拿到所有长度大于二的子串，去判断是否满足条件，咋判断呢，左右指针
+	public String longestPalindrome(String s) {
+        int n = s.length();
+        if(n<2){
+            return s;
+        }
+        int maxLen = 1;
+        String res = s.substring(0,1);
+        for(int i =0;i<n-1;i++){
+            for(int j=i+1;j<n;j++){
+                if(j-i+1>maxLen && valid(s,i,j)){
+                    maxLen = j-i+1;
+                    res = s.substring(i,j+1);
+                }
+            }
+        }
+        return res;
+    }
+
+    private boolean valid(String s, int left, int right) {
+        while(left<right){
+            if(s.charAt(left)!=s.charAt(right)){
+                return false;
+            }
+            left++;
+            right--;
+        }
+        return true;
+    }
+	2.中心扩散法，对每个item从中心进行扩散，从而找到每个item的最长回文子串。
+	中心扩散有两种情况，
+	1.奇数，从i扩散即可，代码的表现形式为i与i进行判断 
+	2.偶数，从缝隙扩散，在代码中的表现为i 与 i+1进行判断
+	public static String longestPalindrome(String s) {
+        int n = s.length();
+        if(n<2){
+            return s;
+        }
+        String res = s.substring(0,1);
+        int maxLen = 1;
+        for(int i=0;i<n-1;i++){
+            String oddString = centerSpread(s,i,i);
+            String evenString = centerSpread(s,i,i+1);
+            String maxLenString = oddString.length()>evenString.length()?oddString:evenString;
+            if(maxLenString.length()>maxLen){
+                maxLen=maxLenString.length();
+                res = maxLenString;
+            }
+        }
+        return res;
+    }
+
+    private static String centerSpread(String s, int left, int right) {
+        int len = s.length();
+        int i = left;
+        int j = right;
+        while(i>=0 && j<len){
+            if(s.charAt(i)==s.charAt(j)){
+                i--;
+                j++;
+            }else{
+                break;
+            }
+        }
+		//这里注意跳出while的条件是s.charAt(i)!=s.charAt(j)因此子串并不包括i j
+        return s.substring(i+1,j);
+    }
