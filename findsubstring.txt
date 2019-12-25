@@ -65,9 +65,9 @@
         return true;
     }
 	2.中心扩散法，对每个item从中心进行扩散，从而找到每个item的最长回文子串。
-	中心扩散有两种情况，
-	1.奇数，从i扩散即可，代码的表现形式为i与i进行判断 
-	2.偶数，从缝隙扩散，在代码中的表现为i 与 i+1进行判断
+		中心扩散有两种情况，
+		1.奇数，从i扩散即可，代码的表现形式为i与i进行判断 
+		2.偶数，从缝隙扩散，在代码中的表现为i 与 i+1进行判断
 	public static String longestPalindrome(String s) {
         int n = s.length();
         if(n<2){
@@ -102,3 +102,30 @@
 		//这里注意跳出while的条件是s.charAt(i)!=s.charAt(j)因此子串并不包括i j
         return s.substring(i+1,j);
     }
+	3.动态规划
+	//动态规划，dp[l][r]表明s[l][r]是不是回文子串。而s[l][r]是否是回文子串取决于s[l+1][r-1]的情况，而当s[l][r]去掉边界为单字符/空字符时，s[l][r]直接为回文子串
+    //总结一下就是当r-1>l+1时，需要判断s[l+1][r-1]，也就是r-l>2,那么反过来r-l<=2时，就不需要判断直接为回文子串.
+    //因此 if(s[l]==s[r] &&(r-1<=2 || dp[l+1][r-1]))这种情况下，s[l][r]为回文子串,or的顺序很重要，这样保证了dp的值在需要时不会为空，保证了动态规划的进行。
+    public static String longestPalindrome(String s){
+        int n = s.length();
+        if(n<2){
+            return s;
+        }
+        int maxLen = 1;
+        String result = s.substring(0,1);
+        boolean[][] dp = new boolean[n][n];
+        //为嘛r从1开始呢，r从0开始不就是初始条件嘛
+        for(int r=1;r<n;r++){
+            for(int l=0;l<r;l++){
+                if(s.charAt(l)==s.charAt(r) && (r-l<=2 || dp[l+1][r-1])){
+                    dp[l][r] = true;
+                    if(r-l+1>maxLen){
+                        maxLen=r-l+1;
+                        result = s.substring(l,r+1);
+                    }
+                }
+            }
+        }
+        return result;
+    }
+	这里Boolean包装类就会报空指针异常。。。。也用不到判断这老哥啊，，boolean就没问题。。。。。。
