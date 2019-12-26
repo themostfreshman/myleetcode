@@ -129,3 +129,29 @@
         return result;
     }
 	这里Boolean包装类就会报空指针异常。。。。也用不到判断这老哥啊，，boolean就没问题。。。。。。
+	
+3.z字形变换，按照题意写就是了
+	public static String convert(String s, int numRows) {
+        //使用loc down来表明当前字符放置在字符串数组的位置，loc==0 || loc=numRows时，down需要变化，而loc的++ -- 由down来决定，向下的化loc++，否则loc--，这样子
+        int n = s.length();
+        if(n<=numRows || numRows==1){
+            return s;
+        }
+        String[] rows = new String[numRows];
+        for(int i=0;i<numRows;i++) rows[i] = "";
+        boolean down = false;
+        int loc = 0;
+
+        for(int i=0;i<n;i++){
+            rows[loc] += s.substring(i,i+1);
+            if(loc==0 || loc ==numRows-1){
+                down = !down;
+            }
+            loc += down?+1:-1;
+        }
+        String result = "";
+        for (String row : rows) {
+            s+=row;
+        }
+        return result;
+    }
