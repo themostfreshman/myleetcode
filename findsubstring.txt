@@ -155,3 +155,45 @@
         }
         return result;
     }
+4.9.字符串转换整数atoi
+	    //1.找到起点，可能为数字，也可能为负号，负号的情况加个变量表示一下就好
+        //2.找到终点，这个就找到不是数字的就行
+        //3.遍历起点到终点，需要判断越界的情况
+    public int myAtoi(String str) {
+        int i = 0, j = 0, len = str.length();
+        boolean negative = false;
+        for (i = 0; i < len; i++) {
+            if ('0' <= str.charAt(i) && str.charAt(i) <= '9') {
+                break;
+            } else if (str.charAt(i) == '-' || str.charAt(i) == '+') {
+                negative = str.charAt(i) == '-';
+                i++;
+                break;
+            } else if (str.charAt(i) != ' ') {
+                return 0;
+            }
+        }
+        for (j = i; j < len; j++) {
+            if (str.charAt(j) < '0' || '9' < str.charAt(j)) {
+                break;
+            }
+        }
+        int ret = 0;
+        String num = str.substring(i, j);
+        for (int x = 0; x < num.length(); x++) {
+            int cur = num.charAt(x) - '0';
+            if (negative) {
+                //这里判断溢出的情况和第7题一样 也就是2
+                if (ret < Integer.MIN_VALUE / 10|| ret == Integer.MIN_VALUE / 10 && cur > 8) {
+                    return Integer.MIN_VALUE;
+                }
+                ret = ret * 10 - cur;
+            } else {
+                if (ret > Integer.MAX_VALUE / 10 || ret == Integer.MAX_VALUE / 10 && cur > 7) {
+                    return Integer.MAX_VALUE;
+                }
+                ret = ret * 10 + cur;
+            }
+        }
+        return ret;
+    }
