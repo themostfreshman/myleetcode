@@ -197,3 +197,42 @@
         }
         return ret;
     }
+5.10 正则匹配
+	//递归，因为很明显存在子问题的情况，可以使用递归来解决。
+	不断减小s/p的字符串长度，递归判断，核心就是判断a 和a*  / b和a*的情况。第一种s的a可以干掉，第二种a*可以干掉
+	public static boolean isMatch1(String s,String p){
+        //第一步，都为空返回true，一方为空，返回false
+        if(p.isEmpty()) return s.isEmpty();
+        //第二步, 判断首字母是否匹配，毕竟*号不可能出现在首位
+        boolean first_match = (!s.isEmpty() && (s.charAt(0)==p.charAt(0) || p.charAt(0)=='.'));
+        //第三步，如果pattern第二个就出现了*号，两种情况，第一种（因为*可以为0的，就判断去掉pattern的前两个字符，再进行比较）
+        // 第二种（在第一个字符匹配的情况下，*号还是可以为0，干掉S的第一个字母即可）
+        if(p.length()>=2 && p.charAt(1)=='*'){
+            return (isMatch1(s,p.substring(2)) || (first_match && isMatch1(s.substring(1),p)));
+        }else{
+		    //第四步，pattern第二个字母不是*，大家就往前跨越一步再判断
+            return first_match && isMatch1(s.substring(1),p.substring(1));
+        }
+
+
+    }
+	//动态规划，使用缓存来优化速度，因为在上面的递推公式已经给出来了
+	    public static boolean isMatch(String text, String pattern){
+            //dp[i][j]表示  s后的t是否与j后的p匹配
+            //基于最开始递归上的思想，使用缓存来优化
+            //核心还是两种条件
+            //为毛需要套一层呢，因为递推公式的是存在j+2的，问了保证j+2始终存在，我们在外面多进行了一层，代码简洁好多
+            boolean[][] dp = new boolean[text.length()+1][pattern.length()+1];
+            dp[text.length()][pattern.length()] = true;
+            for(int i=text.length();i>=0;i--){
+                for(int j=pattern.length()-1;j>=0;j--){
+                    boolean firstMatch = (i<text.length() && (text.charAt(i)==pattern.charAt(j) || pattern.charAt(j)=='.'));
+                    if(j+1< pattern.length() && pattern.charAt(j+1)=='*'){
+                        dp[i][j] = dp[i][j+2] || firstMatch && dp[i+1][j];
+                    }else{
+                        dp[i][j] = firstMatch && dp[i+1][j+1];
+                    }
+                }
+            }
+            return dp[0][0];
+        }
