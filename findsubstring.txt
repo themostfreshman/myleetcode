@@ -236,3 +236,74 @@
             }
             return dp[0][0];
         }
+6.14 最长公共前缀
+    1.逐位判断	
+    public static String longestCommonPrefix1(String[] strs) {
+        //1.判断strs为空的情况
+        if(strs==null && strs.length==0) return "";
+        //外层循环遍历字符，内层循环遍历数组
+        for(int i=0;i<strs[0].length();i++){
+            char c = strs[0].charAt(i);
+            for (String str:strs
+                 ) {
+                //判断跳出  1.字符个数=当前字符串的长度  2.当前字符不同
+                if(i==str.length() || c!=str.charAt(i)){
+                    return strs[0].substring(0,i);
+                }
+            }
+        }
+        return strs[0];
+    }
+    2.水平扫描
+    水平扫描lcp（s1...sn）=lcp(lcp(s1,s2),s3）使用indexof来判断，subtring来减少前缀，前缀为空则退出
+    public  static String longestCommonPrefix2(String[] strs){
+        if (strs.length == 0) return "";
+        String prefix = strs[0];
+        for (int i = 1; i < strs.length; i++)
+            while (strs[i].indexOf(prefix) != 0) {
+                prefix = prefix.substring(0, prefix.length() - 1);
+                if (prefix.isEmpty()) return "";
+            }
+        return prefix;
+    }
+	
+7.20 有效括号判断  标准的栈解法，使用map来简化代码
+		// Hash table that takes care of the mappings.
+        private HashMap<Character, Character> mappings;
+
+        // Initialize hash map with mappings. This simply makes the code easier to read.
+        public  Solution() {
+            this.mappings = new HashMap<Character, Character>();
+            this.mappings.put(')', '(');
+            this.mappings.put('}', '{');
+            this.mappings.put(']', '[');
+        }
+
+        public boolean isValid(String s) {
+            if(s.length()%2!=0)  return false;
+
+            // Initialize a stack to be used in the algorithm.
+            Stack<Character> stack = new Stack<Character>();
+
+            for (int i = 0; i < s.length(); i++) {
+                char c = s.charAt(i);
+
+                // If the current character is a closing bracket.
+                if (this.mappings.containsKey(c)) {
+
+                    // Get the top element of the stack. If the stack is empty, set a dummy value of '#'
+                    char topElement = stack.empty() ? '#' : stack.pop();
+
+                    // If the mapping for this bracket doesn't match the stack's top element, return false.
+                    if (topElement != this.mappings.get(c)) {
+                        return false;
+                    }
+                } else {
+                    // If it was an opening bracket, push to the stack.
+                    stack.push(c);
+                }
+            }
+
+            // If the stack still contains elements, then it is an invalid expression.
+            return stack.isEmpty();
+        }
