@@ -307,3 +307,129 @@
             // If the stack still contains elements, then it is an invalid expression.
             return stack.isEmpty();
         }
+		
+8.28 实现strStr()
+	字符串匹配吧  indexof的实现
+	//笨办法 ，找到第一个匹配的字符，然后判断
+	public static int strStr(String haystack, String needle) {
+        if(needle.equals("")){
+            return 0;
+        }
+        if(haystack.length()<needle.length()){
+            return -1;
+        }
+        //将两个字符串转化为数组，遍历目标数组
+        char[] target = haystack.toCharArray();
+        char[] model = needle.toCharArray();
+        int i=0;
+        boolean flag =true;
+        while(i!=target.length){
+            //找到每一个字符判断后面是不是一样的
+            while(i!=target.length && target[i]!=model[0]){
+                i++;
+            }
+            if(target.length - i <needle.length()){
+                return -1;
+            }
+            if(i==target.length){
+                return -1;
+            }
+            for(int k=1;k<model.length;k++){
+                if(target[i+k]!=model[k]){
+                    flag=false;
+                    break;
+                }
+            }
+            if(flag == true){
+                break;
+            }else{
+                i++;
+                flag =true;
+            }
+        }
+        return i;
+    }
+	//kmp   X，它永远比当前状态 j 落后一个状态，拥有和 j 最长的相同前缀，我们给它起了个名字叫「影子状态」
+	private int[][] dp;
+    private String pat;
+
+	public KMP(String pat) {
+        this.pat = pat;
+        int M = pat.length();
+        // dp[状态][字符] = 下个状态
+        dp = new int[M][256];
+        // base case
+        dp[0][pat.charAt(0)] = 1;
+        // 影子状态 X 初始为 0
+        int X = 0;
+        // 当前状态 j 从 1 开始
+        for (int j = 1; j < M; j++) {
+            for (int c = 0; c < 256; c++) {
+                if (pat.charAt(j) == c) 
+                    dp[j][c] = j + 1;
+                else 
+                    dp[j][c] = dp[X][c];
+            }
+            // 更新影子状态
+            X = dp[X][pat.charAt(j)];
+        }
+    }
+
+
+    public int search(String txt) {
+        int M = pat.length();
+        int N = txt.length();
+        // pat 的初始态为 0
+        int j = 0;
+        for (int i = 0; i < N; i++) {
+            // 计算 pat 的下一个状态
+            j = dp[j][txt.charAt(i)];
+            // 到达终止态，返回结果
+            if (j == M) return i - M + 1;
+        }
+        // 没到达终止态，匹配失败
+        return -1;
+    }
+9.30串联所有字串
+    //使用hashmap来存储word的数量，保证不会超量
+	public List<Integer> findSubstring(String s, String[] words) {
+		List<Integer> res = new ArrayList<Integer>();
+		int wordNum = words.length;
+		if (wordNum == 0) {
+			return res;
+		}
+		int wordLen = words[0].length();
+		//HashMap1 存所有单词
+		HashMap<String, Integer> allWords = new HashMap<String, Integer>();
+		for (String w : words) {
+			int value = allWords.getOrDefault(w, 0);
+			allWords.put(w, value + 1);
+		}
+		//遍历所有子串
+		for (int i = 0; i < s.length() - wordNum * wordLen + 1; i++) {
+			//HashMap2 存当前扫描的字符串含有的单词
+			HashMap<String, Integer> hasWords = new HashMap<String, Integer>();
+			int num = 0;
+			//判断该子串是否符合
+			while (num < wordNum) {
+				String word = s.substring(i + num * wordLen, i + (num + 1) * wordLen);
+				//判断该单词在 HashMap1 中
+				if (allWords.containsKey(word)) {
+					int value = hasWords.getOrDefault(word, 0);
+					hasWords.put(word, value + 1);
+					//判断当前单词的 value 和 HashMap1 中该单词的 value
+					if (hasWords.get(word) > allWords.get(word)) {
+						break;
+					}
+				} else {
+					break;
+				}
+				num++;
+			}
+			//判断是不是所有的单词都符合条件
+			if (num == wordNum) {
+				res.add(i);
+			}
+		}
+	return res;
+}
