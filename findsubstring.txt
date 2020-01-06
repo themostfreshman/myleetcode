@@ -433,3 +433,249 @@
 		}
 	return res;
 }
+10.32最长有效括弧
+	暴力法：1.拿到所有的非空偶数的子串，然后判定该子串是否有效，然后保存最大子串长度。。。超时
+	public boolean isValid(String s) {
+        Stack<Character> stack = new Stack<Character>();
+        for (int i = 0; i < s.length(); i++) {
+            if (s.charAt(i) == '(') {
+                stack.push('(');
+            } else if (!stack.empty() && stack.peek() == '(') {
+                stack.pop();
+            } else {
+                return false;
+            }
+        }
+        return stack.empty();
+    }
+    public int longestValidParentheses(String s) {
+        int maxlen = 0;
+        for (int i = 0; i < s.length(); i++) {
+            for (int j = i + 2; j <= s.length(); j+=2) {
+                if (isValid(s.substring(i, j))) {
+                    maxlen = Math.max(maxlen, j - i);
+                }
+            }
+        }
+        return maxlen;
+    }
+	动态规划 规定dp[i]保存以i为结尾的子串的最长有效长度，初始化为0 ，以 （ 结尾跳过，一定为0，以）为结尾有两种情况
+			 1.s[i-1]为（ 则dp[i]=dp[i-2]+2  ()的情况
+			 2.s[i-1]为 ）则如果 s[i-dp[i-1]-1]==(        (())的情况，那么dp[i]=dp[i-1]+dp[i-dp[i-1]-2]+2  nb
+	public int longestValidParentheses(String s) {
+        int maxans = 0;
+        int dp[] = new int[s.length()];
+        for (int i = 1; i < s.length(); i++) {
+            if (s.charAt(i) == ')') {
+                if (s.charAt(i - 1) == '(') {
+                    dp[i] = (i >= 2 ? dp[i - 2] : 0) + 2;
+                } else if (i - dp[i - 1] > 0 && s.charAt(i - dp[i - 1] - 1) == '(') {
+                    dp[i] = dp[i - 1] + ((i - dp[i - 1]) >= 2 ? dp[i - dp[i - 1] - 2] : 0) + 2;
+                }
+                maxans = Math.max(maxans, dp[i]);
+            }
+        }
+        return maxans;
+    }
+	栈  观察规律 发现 （ ） ）（ （（  ） ）
+					   0 1  2  3  4 5  6  7
+					   最长的子串长度等于  7 - 3 = 4   1-（-1）=2
+					   因此每当 （ 时 入栈， 每当 ( 时出栈，如果栈为空 ，入栈，不为空，最长子串=i-栈顶序号
+	public int longestValidParentheses(String s) {
+        int maxans = 0;
+        Stack<Integer> stack = new Stack<>();
+        stack.push(-1);
+        for (int i = 0; i < s.length(); i++) {
+            if (s.charAt(i) == '(') {
+                stack.push(i);
+            } else {
+                stack.pop();
+                if (stack.empty()) {
+                    stack.push(i);
+                } else {
+                    maxans = Math.max(maxans, i - stack.peek());
+                }
+            }
+        }
+        return maxans;
+    }
+11.42 字符串相乘
+    1.竖乘法  emmm注解很清晰
+	    public String multiply(String num1, String num2) {
+        if (num1.equals("0") || num2.equals("0")) {
+            return "0";
+        }
+        // 保存计算结果
+        String res = "0";
+        
+        // num2 逐位与 num1 相乘
+        for (int i = num2.length() - 1; i >= 0; i--) {
+            int carry = 0;
+            // 保存 num2 第i位数字与 num1 相乘的结果
+            StringBuilder temp = new StringBuilder();
+            // 补 0 
+            for (int j = 0; j < num2.length() - 1 - i; j++) {
+                temp.append(0);
+            }
+            int n2 = num2.charAt(i) - '0';
+            
+            // num2 的第 i 位数字 n2 与 num1 相乘
+            for (int j = num1.length() - 1; j >= 0 || carry != 0; j--) {
+                int n1 = j < 0 ? 0 : num1.charAt(j) - '0';
+                int product = (n1 * n2 + carry) % 10;
+                temp.append(product);
+                carry = (n1 * n2 + carry) / 10;
+            }
+            // 将当前结果与新计算的结果求和作为新的结果
+            res = addStrings(res, temp.reverse().toString());
+        }
+        return res;
+    }
+
+    /**
+     * 对两个字符串数字进行相加，返回字符串形式的和
+     */
+    public String addStrings(String num1, String num2) {
+        StringBuilder builder = new StringBuilder();
+        int carry = 0;
+        for (int i = num1.length() - 1, j = num2.length() - 1;
+             i >= 0 || j >= 0 || carry != 0;
+             i--, j--) {
+            int x = i < 0 ? 0 : num1.charAt(i) - '0';
+            int y = j < 0 ? 0 : num2.charAt(j) - '0';
+            int sum = (x + y + carry) % 10;
+            builder.append(sum);
+            carry = (x + y + carry) / 10;
+        }
+        return builder.reverse().toString();
+    }
+	2.优化，很大一部分的消耗在于两个字符串相加，我们不使用字符串相加去获得结果，而是直接根据各位相乘的temp在结果中的位置来进行相加
+	    public String multiply(String num1, String num2) {
+        if (num1.equals("0") || num2.equals("0")) {
+            return "0";
+        }
+        int[] res = new int[num1.length() + num2.length()];
+        for (int i = num1.length() - 1; i >= 0; i--) {
+            int n1 = num1.charAt(i) - '0';
+            for (int j = num2.length() - 1; j >= 0; j--) {
+                int n2 = num2.charAt(j) - '0';
+                int sum = (res[i + j + 1] + n1 * n2);
+                res[i + j + 1] = sum % 10;
+                res[i + j] += sum / 10;
+            }
+        }
+
+        StringBuilder result = new StringBuilder();
+        for (int i = 0; i < res.length; i++) {
+            if (i == 0 && res[i] == 0) continue;
+            result.append(res[i]);
+        }
+        return result.toString();
+    }
+	1 2 3
+	  4 5
+	  1 5
+	1 0
+	一次类推 
+	
+12.49字母异位词分组
+	1.最直观的想法，遍历数组，判断与当前字符串相同的element，分组，使用used[]来简化判断，两字符串是否相等，可以使用map来保存字符出现的个数来判断，不过好慢
+	class Solution {
+		public List<List<String>> groupAnagrams(String[] strs) {
+			List<List<String>> ans = new ArrayList<>();
+			boolean[] used = new boolean[strs.length];
+			for (int i = 0; i < strs.length; i++) {
+				List<String> temp = null;
+				if (!used[i]) {
+					temp = new ArrayList<String>();
+					temp.add(strs[i]);
+					//两两比较判断字符串是否符合
+					for (int j = i + 1; j < strs.length; j++) {
+						if(!used[j]){
+							if (equals(strs[i], strs[j])) {
+							used[j] = true;
+							temp.add(strs[j]);
+							}
+						}
+
+					}
+				}
+				if (temp != null) {
+					ans.add(temp);
+
+				}
+			}
+			return ans;
+
+		}
+		private boolean equals(String string1, String string2) {
+			Map<Character, Integer> hash = new HashMap<>();
+			//记录第一个字符串每个字符出现的次数，进行累加
+			for (int i = 0; i < string1.length(); i++) {
+				if (hash.containsKey(string1.charAt(i))) {
+					hash.put(string1.charAt(i), hash.get(string1.charAt(i)) + 1);
+				} else {
+					hash.put(string1.charAt(i), 1);
+				}
+			}
+			 //记录第一个字符串每个字符出现的次数，将之前的每次减 1
+			for (int i = 0; i < string2.length(); i++) {
+				if (hash.containsKey(string2.charAt(i))) {
+					hash.put(string2.charAt(i), hash.get(string2.charAt(i)) - 1);
+				} else {
+					return false;
+				}
+			}
+			//判断每个字符的次数是不是 0 ，不是的话直接返回 false
+			Set<Character> set = hash.keySet();
+			for (char c : set) {
+				if (hash.get(c) != 0) {
+					return false;
+				}
+			}
+			return true;
+		}
+	}
+	2.只要将一组字符串映射到同一位置即可，那就按字典序排序
+	public List<List<String>> groupAnagrams(String[] strs) {
+		HashMap<String, List<String>> hash = new HashMap<>();
+		for (int i = 0; i < strs.length; i++) {
+			char[] s_arr = strs[i].toCharArray();
+			//排序
+			Arrays.sort(s_arr);
+			//映射到 key
+			String key = String.valueOf(s_arr); 
+			//添加到对应的类中
+			if (hash.containsKey(key)) {
+				hash.get(key).add(strs[i]);
+			} else {
+				List<String> temp = new ArrayList<String>();
+				temp.add(strs[i]);
+				hash.put(key, temp);
+			}
+
+		}
+		return new ArrayList<List<String>>(hash.values()); 
+	}
+	3.还是映射的问题，利用算术基本定理，一个非质数可以唯一的分解为质因子的乘积，将每个字符映射到一个质因子，然后相乘，结果一致则说明相同
+	public List<List<String>> groupAnagrams(String[] strs) {
+		HashMap<Integer, List<String>> hash = new HashMap<>();
+		//每个字母对应一个质数
+		int[] prime = { 2, 3, 5, 7, 11, 13, 17, 19, 23, 29, 31, 41, 43, 47, 53, 59, 61, 67, 71, 73, 79, 83, 89, 97, 101, 103 };
+		for (int i = 0; i < strs.length; i++) {
+			int key = 1;
+			//累乘得到 key
+			for (int j = 0; j < strs[i].length(); j++) {
+				key *= prime[strs[i].charAt(j) - 'a'];
+			} 
+			if (hash.containsKey(key)) {
+				hash.get(key).add(strs[i]);
+			} else {
+				List<String> temp = new ArrayList<String>();
+				temp.add(strs[i]);
+				hash.put(key, temp);
+			}
+
+		}
+		return new ArrayList<List<String>>(hash.values());
+}
