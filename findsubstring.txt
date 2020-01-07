@@ -221,7 +221,7 @@
             //dp[i][j]表示  s后的t是否与j后的p匹配
             //基于最开始递归上的思想，使用缓存来优化
             //核心还是两种条件
-            //为毛需要套一层呢，因为递推公式的是存在j+2的，问了保证j+2始终存在，我们在外面多进行了一层，代码简洁好多
+            //为毛需要套一层呢，因为递推公式的是存在j+2的，为了保证j+2始终存在，我们在外面多进行了一层，代码简洁好多
             boolean[][] dp = new boolean[text.length()+1][pattern.length()+1];
             dp[text.length()][pattern.length()] = true;
             for(int i=text.length();i>=0;i--){
@@ -679,3 +679,52 @@
 		}
 		return new ArrayList<List<String>>(hash.values());
 }
+13.44通配符匹配
+    //双指针法，3种情况，s p 匹配 前进   p为*，先把*当空串看，记录*的位置，以及s的位置，并用match来记录*匹配了几个字符，当s遍历完毕后，看看p是否到达了末尾，是的话匹配
+    boolean isMatch(String str, String pattern) {
+        int s=0,p=0,startIdx=-1,match=0;
+        while(s<str.length()){
+            //匹配
+            if(p<pattern.length() && (str.charAt(s)==pattern.charAt(p) || pattern.charAt(p) == '?')){
+                s++;
+                p++;
+            }else if(p<pattern.length() && pattern.charAt(p) == '*'){
+                //碰到*，先当空串处理，后续匹配不先去了进行回溯，咋回溯呢，记录下当前的位置
+                startIdx = p;
+                match = s;
+                p++;
+            }else if(startIdx!=-1){
+                //碰到不匹配了，然后前面有*，回溯,咋回溯呢，p回溯到*的后一个，而s回溯到match的后一个，此时说明，*匹配了一个字符。
+                p = startIdx+1;
+                match++;
+                s = match;
+            }else{
+                return false;
+            }
+        }
+        //当s跳出时，如果p后面全是*，那么全跳过
+        while(p<pattern.length() && pattern.charAt(p)=='*'){
+            p++;
+        }
+        //判断p是否到达了末尾，是的话，匹配
+        return p == pattern.length();
+    }
+    //动态规划，倒着来还是顺着来其实是看我们观察得到的递推公式是怎么样的，而dp的规模取决于我们递推公式会 参考+多少的问题
+    boolean isMatch2(String str, String pattern){
+        boolean[][] dp = new boolean[str.length() + 1][pattern.length() + 1];
+        dp[str.length()][pattern.length()] = true;
+        for(int i=str.length();i>=0;i++){
+            for(int j = pattern.length();j>=0;j++){
+                if(i==str.length() && j==pattern.length()){
+                    continue;
+                }
+                boolean firstMatch = (i<str.length() && j<pattern.length()) &&(str.charAt(i) == pattern.charAt(j) || pattern.charAt(j)=='?'||pattern.charAt(j)=='i');
+                if(j<pattern.length() && pattern.charAt(j)=='*'){
+                    dp[i][j] = dp[i][j+1] || (firstMatch && dp[i+1][j]);
+                }else{
+                    dp[i][j] = firstMatch && dp[i+1][j+1];
+                }
+            }
+        }
+        return dp[0][0];
+    }
