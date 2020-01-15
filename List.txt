@@ -1,0 +1,14 @@
+1.11 乘最多水的容器
+	最开始的想法是 数组嘛，遍历就完事了，每个元素当key，判断当前key的最大值。。brute force
+	双指针的核心是如何移动指针，也就是状态的剪枝，动谁呢，动小的那边，面积才有可能增大，
+	s[i,j] 假设h[i]<h[j]，那么s[i+1,j] 一定大于s[i,j-1]、s[i,j-2]...s[i,i+1]。。因为容量只与短边有关
+	SO...
+	public int maxArea(int[] height) {
+        int i = 0, j = height.length - 1, res = 0;
+        while(i < j){
+            res = height[i] < height[j] ? 
+                Math.max(res, (j - i) * height[i++]): 
+                Math.max(res, (j - i) * height[j--]); 
+        }
+        return res;
+    }
