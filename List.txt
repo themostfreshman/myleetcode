@@ -55,5 +55,53 @@
 		}
 		return n;
 	}
+	
+4.下一个排列
+	不管前面的数组是怎么样的，我们的核心是去找反过来的对号的形状，1 2 7 4 3 1，这种结构的，找到最后一个这种结构，确定 2  3的位置，交换，
+	因为我们找到这种结构就保证了7之后一定是降序序列，下一个序列一定是增序，因此 2之后的元素反转
+	public void nextPermutation(int[] nums) {
+        if (nums == null || nums.length == 0) return;
+        int firstIndex = -1;
+		//貌似也只能倒过来找
+        for (int i = nums.length - 2; i >= 0; i--) {
+            if (nums[i] < nums[i + 1]) {
+                firstIndex = i;
+                break;
+            }
+        }
+		//没有这种结构，说明完全降序，也就是最大序列，反过来就行
+        if (firstIndex == -1) {
+            reverse(nums, 0, nums.length - 1);
+            return;
+        }
+        int secondIndex = -1;
+		//找到3的位置，也就是最后一个大于2的元素，
+        for (int i = nums.length - 1; i >= 0; i--) {
+            if (nums[i] > nums[firstIndex]) {
+                secondIndex = i;
+                break;
+            }
+        }
+		//交换后仍能保证2之后是降序排列
+        swap(nums, firstIndex, secondIndex);
+		//反转为升序即可
+        reverse(nums, firstIndex + 1, nums.length - 1);
+        return;
+
+    }
+
+    private void reverse(int[] nums, int i, int j) {
+        while (i < j) {
+            swap(nums, i++, j--);
+        }
+    }
+
+    private void swap(int[] nums, int i, int i1) {
+        int tmp = nums[i];
+        nums[i] = nums[i1];
+        nums[i1] = tmp;
+    }
+
+
 
 
