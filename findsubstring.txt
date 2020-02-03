@@ -477,28 +477,6 @@
         }
         return maxans;
     }
-	栈  观察规律 发现 （ ） ）（ （（  ） ）
-					   0 1  2  3  4 5  6  7
-					   最长的子串长度等于  7 - 3 = 4   1-（-1）=2
-					   因此每当 （ 时 入栈， 每当 ( 时出栈，如果栈为空 ，入栈，不为空，最长子串=i-栈顶序号
-	public int longestValidParentheses(String s) {
-        int maxans = 0;
-        Stack<Integer> stack = new Stack<>();
-        stack.push(-1);
-        for (int i = 0; i < s.length(); i++) {
-            if (s.charAt(i) == '(') {
-                stack.push(i);
-            } else {
-                stack.pop();
-                if (stack.empty()) {
-                    stack.push(i);
-                } else {
-                    maxans = Math.max(maxans, i - stack.peek());
-                }
-            }
-        }
-        return maxans;
-    }
 11.42 字符串相乘
     1.竖乘法  emmm注解很清晰
 	    public String multiply(String num1, String num2) {
