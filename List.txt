@@ -155,3 +155,39 @@
 		return list;
         
     }
+	
+7.55跳跃游戏
+	之前做过2，要求的是跳跃的最小次数，这次是判断能不能到
+	思路一样，判断当前点所能到达的最大边界，并判断边界内的各点所能到达的最远距离，然后更新边界
+	public boolean canJump(int[] nums) {
+		int end=0;
+		for(int i=0;i<nums.length;i++){
+			if(i>end) return false;
+			end = Math.max(end,nums[i]+i);
+		}
+		return true;     
+    }
+	
+	
+8.56合并区间
+	传入的参数数组是么的顺序的，因此需要以各元素的首元素进行排序，排完序然后呢，合并，[a,b] [c,d] 当b>c时需要合并，咋合并呢，左边界a确定，右边界为max(b,d)
+	    public int[][] merge(int[][] intervals) {
+        List<int[]> res = new ArrayList<>();
+        if (intervals.length == 0 || intervals == null) return res.toArray(new int[0][]);
+        Arrays.sort(intervals, (a, b) -> a[0] - b[0]);
+        int i = 0;
+        while (i < intervals.length) {
+            int left = intervals[i][0];
+            int right = intervals[i][1];
+            while (i < intervals.length - 1 && intervals[i + 1][0] <= right) {
+                i++;
+                right = Math.max(right, intervals[i][1]);
+            }
+            res.add(new int[]{left, right});
+            i++;
+        }
+        return res.toArray(new int[0][]);
+    }
+	需要注意的地方
+	1.return res.toArray(new int[0][]);  参数意味着不指定行、行自动填充，如果为new int[4][], 即使结果为[[1,6],[8,10],[15,18]]， 也会强制输出[[1,6],[8,10],[15,18],null]，即不足行null补充
+	2.Arrays.sort(intervals, (a, b) -> a[0] - b[0]);  lambda表达式写的comparator对象
