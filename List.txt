@@ -191,3 +191,29 @@
 	需要注意的地方
 	1.return res.toArray(new int[0][]);  参数意味着不指定行、行自动填充，如果为new int[4][], 即使结果为[[1,6],[8,10],[15,18]]， 也会强制输出[[1,6],[8,10],[15,18],null]，即不足行null补充
 	2.Arrays.sort(intervals, (a, b) -> a[0] - b[0]);  lambda表达式写的comparator对象
+	
+9.57 插入区间  其实和56蛮像的，  先把插入区间的左半部分扔进结果数组([a,b] [c,d] c>b)  ,然后存在合并的情况([a,b],[c,d] b>c)，如果合并，使用合并的区间继续判断(使用temp数组来完成)
+	之后把左边的区间扔进结果数组
+	public int[][] insert(int[][] intervals, int[] newInterval) {
+       List<int[]> res = new ArrayList<>();
+        int i = 0;
+		//左
+        while (i < intervals.length && newInterval[0] > intervals[i][1]) {
+            res.add(intervals[i]);
+            i++;
+        }
+		//合并
+        int[] tmp = new int[]{newInterval[0], newInterval[1]};
+        while (i < intervals.length && newInterval[1] >= intervals[i][0]) {
+            tmp[0] = Math.min(tmp[0], intervals[i][0]);
+            tmp[1] = Math.max(tmp[1], intervals[i][1]);
+            i++;
+        }
+        res.add(tmp);
+		//右
+        while (i < intervals.length) {
+            res.add(intervals[i]);
+            i++;
+        }
+        return res.toArray(new int[0][]); 
+    }
