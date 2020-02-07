@@ -217,3 +217,67 @@
         }
         return res.toArray(new int[0][]); 
     }
+	
+	
+10.59 螺旋矩阵2 和54很像，采取预设的边界进行模拟
+    public int[][] generateMatrix(int n) {
+        int l = 0, r = n - 1, t = 0, b = n - 1;
+        int[][] mat = new int[n][n];
+        int num = 1, tar = n * n;
+        while(num <= tar){
+            for(int i = l; i <= r; i++) mat[t][i] = num++; // left to right.
+            t++;
+            for(int i = t; i <= b; i++) mat[i][r] = num++; // top to bottom.
+            r--;
+            for(int i = r; i >= l; i--) mat[b][i] = num++; // right to left.
+            b--;
+            for(int i = b; i >= t; i--) mat[i][l] = num++; // bottom to top.
+            l++;
+        }
+        return mat;
+    }
+
+11.62.不同路径 
+	典型的动态规划题。。。好牛逼啊。。。。
+	1.组合数学，机器人从start 到 end 总共要走 m-1+n-1=m+n-2步，然后呢，c(m-1,m+n-2)就完事了
+	2.动态规划  dp[i][j]为到达当前位置所有的路径 dp[i][j]=dp[i-1][j]+dp[i][j-1]  i==0||j==0时dp=1;
+		public int uniquePaths(int m, int n) {
+			int[][] dp = new int[m][n];        
+			for (int i = 0; i < m; i++) {
+				for (int j = 0; j < n; j++) {
+					if (i == 0 || j == 0)
+						dp[i][j] = 1;
+					else {
+						dp[i][j] = dp[i - 1][j] + dp[i][j - 1];
+					}
+				}
+			}
+			return dp[m - 1][n - 1];        
+		}
+	2.1优化空间
+		dp仅与当前行与前一行相关，so
+		    public int uniquePaths(int m, int n) {
+        int[] pre = new int[n];
+        int[] cur = new int[n];
+        Arrays.fill(pre, 1);
+        Arrays.fill(cur,1);
+        for (int i = 1; i < m;i++){
+            for (int j = 1; j < n; j++){
+                cur[j] = cur[j-1] + pre[j];
+            }
+            pre = cur.clone();
+        }
+        return pre[n-1]; 
+    }
+	2.2进一步优化，cur本身就存有前一行的数值，因此cur[j]=cur[j-1]+cur[j]
+	public int uniquePaths(int m, int n) {
+        int[] cur = new int[n];
+        Arrays.fill(cur,1);
+        for (int i = 1; i < m;i++){
+            for (int j = 1; j < n; j++){
+                cur[j] += cur[j-1] ;
+            }
+        }
+        return cur[n-1];
+    }
+
