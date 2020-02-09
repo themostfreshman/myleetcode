@@ -281,3 +281,180 @@
         return cur[n-1];
     }
 
+12.63.不同路径2
+	与上题相比增加了障碍，因此需要对第一行和第一列做特殊判断，而从[1,1]开始，如上，遇到1 dp为0即可   这里把原数组作为dp数组
+	    public int uniquePathsWithObstacles(int[][] obstacleGrid) {
+
+        int R = obstacleGrid.length;
+        int C = obstacleGrid[0].length;
+
+        // If the starting cell has an obstacle, then simply return as there would be
+        // no paths to the destination.
+        if (obstacleGrid[0][0] == 1) {
+            return 0;
+        }
+
+        // Number of ways of reaching the starting cell = 1.
+        obstacleGrid[0][0] = 1;
+
+        // Filling the values for the first column
+        for (int i = 1; i < R; i++) {
+            obstacleGrid[i][0] = (obstacleGrid[i][0] == 0 && obstacleGrid[i - 1][0] == 1) ? 1 : 0;
+        }
+
+        // Filling the values for the first row
+        for (int i = 1; i < C; i++) {
+            obstacleGrid[0][i] = (obstacleGrid[0][i] == 0 && obstacleGrid[0][i - 1] == 1) ? 1 : 0;
+        }
+
+        // Starting from cell(1,1) fill up the values
+        // No. of ways of reaching cell[i][j] = cell[i - 1][j] + cell[i][j - 1]
+        // i.e. From above and left.
+        for (int i = 1; i < R; i++) {
+            for (int j = 1; j < C; j++) {
+                if (obstacleGrid[i][j] == 0) {
+                    obstacleGrid[i][j] = obstacleGrid[i - 1][j] + obstacleGrid[i][j - 1];
+                } else {
+                    obstacleGrid[i][j] = 0;
+                }
+            }
+        }
+
+        // Return value stored in rightmost bottommost cell. That is the destination.
+        return obstacleGrid[R - 1][C - 1];
+    }
+	
+	同样可以使用上面的优化方法对该题进行优化  dp的取值原因
+	这里没有对第一行进行单独判断，因为第一行除[1,1]外初始化为0，dp[j]+=dp[j-1],第一个1出现后可以保证后面全为0。
+	第一列的话，就使用上一列的数值即可。
+	public int uniquePathsWithObstacles(int[][] grid) {
+        int[] dp = new int[grid[0].length];
+        dp[0]=1;
+        for(int i=0;i<grid.length;i++){
+            for(int j=0;j<grid[0].length;j++){
+                if(grid[i][j]==1){
+                    dp[j]=0;
+                    continue;
+                }
+                if(j>0)
+                    dp[j]+=dp[j-1];
+            }
+        }
+        return dp[dp.length-1];
+    }
+13.64.最小路径和
+	还是标准的动态规划解法，改改上面的代码就好
+	空间优化好像不行
+	public int minPathSum(int[][] grid) {
+        for(int i = 0; i < grid.length; i++) {
+            for(int j = 0; j < grid[0].length; j++) {
+                if(i == 0 && j == 0) continue;
+                else if(i == 0)  grid[i][j] = grid[i][j - 1] + grid[i][j];
+                else if(j == 0)  grid[i][j] = grid[i - 1][j] + grid[i][j];
+                else grid[i][j] = Math.min(grid[i - 1][j], grid[i][j - 1]) + grid[i][j];
+            }
+        }
+        return grid[grid.length - 1][grid[0].length - 1];
+    }
+	
+14.66.加一
+	看清楚题哈，返回的还是数组，那么就倒着来，如果产生进位，就继续，如果遍历完还在产生进位，那就说明是999的情况，最后直接给个1000就可以了  length+1，首位赋1
+	public int[] plusOne(int[] digits) {
+        for (int i = digits.length - 1; i >= 0; i--) {
+            digits[i]++;
+            digits[i] = digits[i] % 10;
+            if (digits[i] != 0) return digits;
+        }
+        digits = new int[digits.length + 1];
+        digits[0] = 1;
+        return digits;
+    }
+	
+15.矩阵置零
+	么的意思  两次遍历。第一次找行列，第二次置零 
+	public void setZeroes(int[][] matrix) {
+        Set<Integer> row_zero = new HashSet<>();
+        Set<Integer> col_zero = new HashSet<>();
+        int row = matrix.length;
+        int col = matrix[0].length;
+        for (int i = 0; i < row; i++) {
+            for (int j = 0; j < col; j++) {
+                if (matrix[i][j] == 0) {
+                    row_zero.add(i);
+                    col_zero.add(j);
+                }
+            }
+        }
+        for (int i = 0; i < row; i++) {
+            for (int j = 0; j < col; j++) {
+                if (row_zero.contains(i) || col_zero.contains(j)) matrix[i][j] = 0;
+            }
+        }  
+    }
+	
+	不过这里的要求是空间复杂度o(1)，所以上面的并不符合
+	那么我们使用第一行与第一列来作为标记位，这样的话需要提前判断第一行与第一列是否包含零，最后再清空一下
+	public void setZeroes(int[][] matrix) {
+        int row = matrix.length;
+        int col = matrix[0].length;
+        boolean row0_flag = false;
+        boolean col0_flag = false;
+        // 第一行是否有零
+        for (int j = 0; j < col; j++) {
+            if (matrix[0][j] == 0) {
+                row0_flag = true;
+                break;
+            }
+        }
+        // 第一列是否有零
+        for (int i = 0; i < row; i++) {
+            if (matrix[i][0] == 0) {
+                col0_flag = true;
+                break;
+            }
+        }
+        // 把第一行第一列作为标志位
+        for (int i = 1; i < row; i++) {
+            for (int j = 1; j < col; j++) {
+                if (matrix[i][j] == 0) {
+                    matrix[i][0] = matrix[0][j] = 0;
+                }
+            }
+        }
+        // 置0
+        for (int i = 1; i < row; i++) {
+            for (int j = 1; j < col; j++) {
+                if (matrix[i][0] == 0 || matrix[0][j] == 0) {
+                    matrix[i][j] = 0;
+                }
+            }
+        }
+        if (row0_flag) {
+            for (int j = 0; j < col; j++) {
+                matrix[0][j] = 0;
+            }
+        }
+        if (col0_flag) {
+            for (int i = 0; i < row; i++) {
+                matrix[i][0] = 0;
+            }
+        } 
+    }
+
+16.搜索二维数组
+	因为完全有序的特性，这里我们转为一维数组并使用二分法来查找
+		1.咋转一维数组呢，一维数组共有row*col个数组，那么一维数组的元素坐标j转为二维数组则为[j/col][j%col]
+		2.二分法，这里搜索区间定位[0,row*col）左闭右开，if(mid<target) left=mid+1;else right=mid;	
+    public boolean searchMatrix(int[][] matrix, int target) {
+        if (matrix == null || matrix.length == 0) return false;
+        int row = matrix.length;
+        int col = matrix[0].length;
+        int left = 0;
+        int right = row * col;
+        while (left < right) {
+            int mid = left + (right - left) / 2;
+            if (matrix[mid / col][mid % col] < target) left = mid + 1;
+            else right = mid;
+        }
+        return (left < row * col && matrix[left / col][left % col] == target); 
+    }
