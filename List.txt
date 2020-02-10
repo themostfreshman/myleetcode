@@ -441,7 +441,7 @@
         } 
     }
 
-16.搜索二维数组
+16.74.搜索二维数组
 	因为完全有序的特性，这里我们转为一维数组并使用二分法来查找
 		1.咋转一维数组呢，一维数组共有row*col个数组，那么一维数组的元素坐标j转为二维数组则为[j/col][j%col]
 		2.二分法，这里搜索区间定位[0,row*col）左闭右开，if(mid<target) left=mid+1;else right=mid;	
@@ -458,3 +458,113 @@
         }
         return (left < row * col && matrix[left / col][left % col] == target); 
     }
+17.75颜色分类 
+	按题目的意思就是排序
+	1.遍历一遍数组，找到有几个0 几个1 几个2 然后改就完事了
+	2.遍历一遍数组，0就放前面，2就放后面，1不用管，就完事了  代码写的很烂。。。。。
+	public void sortColors(int[] nums) {
+        int i = 0;
+        while(i < nums.length && nums[i]==0) i++;
+        int j = nums.length-1;
+        while(j >=0 && nums[j]==2) j--;
+        for(int k = i; k <=j&&i<=j;k++){
+            if(nums[k]==0){
+                int temp = nums[k];
+                nums[k] = nums[i];
+                nums[i++] = temp;
+                while(i < nums.length &&nums[i]==0) i++;
+                k=i;
+            }
+            else if(nums[k]==2){
+                int temp = nums[k];
+                nums[k] = nums[j];
+                nums[j--] = temp;
+                while(j >=0 &&nums[j]==2) j--;
+            }
+            if(nums[k]==0 || nums[k]==2) k--;
+        }
+    }
+	优化的代码
+	//用while会好很多
+	 public void sortColors(int[] nums) {
+        int len = nums.length;
+        if (len < 2) {
+            return;
+        }
+
+        // all in [0, zero) = 0
+        // all in [zero, i) = 1
+        // all in [two, len - 1] = 2
+
+        // 循环终止条件是 i == two，那么循环可以继续的条件是 i < two
+
+        // 为了保证初始化的时候 [0, zero) 为空，设置 zero = 0，
+        // 所以下面遍历到 0 的时候，先交换，再加
+        int zero = 0;
+
+        // 为了保证初始化的时候 [two, len - 1] 为空，设置 two = len
+        // 所以下面遍历到 2 的时候，先减，再交换
+        int two = len;
+
+        int i = 0;
+
+        // 当 i == two 上面的三个子区间正好覆盖了全部数组
+        // 因此，循环可以继续的条件是 i < two
+
+        while (i < two) {
+            if (nums[i] == 0) {
+                swap(nums, i, zero);
+                zero++;
+                i++;
+            } else if (nums[i] == 1) {
+                i++;
+            } else {
+                two--;
+                swap(nums, i, two);
+            }
+        }
+    }
+
+    private void swap(int[] nums, int index1, int index2) {
+        int temp = nums[index1];
+        nums[index1] = nums[index2];
+        nums[index2] = temp;
+    }
+18.78.子集
+	两种方法1.迭代 2.递归
+	1.遍历数组，单个加入，遍历结果list，每个list添加当前元素
+	public static List<List<Integer>> enumerate(int[] nums) {
+        List<List<Integer>> res = new ArrayList<List<Integer>>();
+        res.add(new ArrayList<Integer>());
+        for (Integer n : nums) {
+            int size = res.size();
+            for (int i = 0; i < size; i++) {
+                List<Integer> newSub = new ArrayList<Integer>(res.get(i));
+                newSub.add(n);
+                res.add(newSub);
+            }
+        }
+        return res;
+    }
+	2.递归（回溯）
+	class Solution {
+		public List<List<Integer>> subsets(int[] nums) {
+			//1.第一步是声明结果list
+			List<List<Integer>> res = new ArrayList<>();
+			//第二步来规定处理函数，一般为  int start  根据结果list得到的List<Integer>参数，以及主函数的参数nums，res可以声明为全局变量从而从参数中移除
+			backtrack(0, nums, res, new ArrayList<Integer>());
+			return res;
+
+		}
+
+		private void backtrack(int i, int[] nums, List<List<Integer>> res, ArrayList<Integer> tmp) {
+		//3.第三步是表明递归的出口，这里么的出口，直接将tmp加入即可
+			res.add(new ArrayList<>(tmp));
+		//4.第四步根据题意遍历nums   添加元素，处理，移除添加的元素然后继续遍历
+			for (int j = i; j < nums.length; j++) {
+				tmp.add(nums[j]);
+				backtrack(j + 1, nums, res, tmp);
+				tmp.remove(tmp.size() - 1);
+			}
+		}
+}
